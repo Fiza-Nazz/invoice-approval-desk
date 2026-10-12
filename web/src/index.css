@@ -144,52 +144,6 @@ body {
   margin-top: 0.15rem;
 }
 
-.header-status-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 1.15rem;
-  border-radius: 9999px;
-  background: #ffffff;
-  border: 1.5px solid #cbd5e1;
-  box-shadow: var(--shadow-sm);
-}
-
-.sentinel-dot {
-  position: relative;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: var(--color-action-approve);
-}
-
-.sentinel-ping {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: var(--color-action-approve);
-  animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-.sentinel-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.sentinel-label {
-  font-size: 0.775rem;
-  font-weight: 700;
-  color: var(--color-navy-dark);
-}
-
-.sentinel-sub {
-  font-size: 0.675rem;
-  color: var(--color-text-muted);
-}
-
 /* Metric KPI Cards (Navy Blue Card Borders & Colorful Action Icons) */
 .metrics-grid {
   display: grid;

@@ -135,16 +135,6 @@ export const App: React.FC = () => {
             </div>
           </div>
         </div>
-
-        <div className="header-status-badge">
-          <span className="sentinel-dot">
-            <span className="sentinel-ping" />
-          </span>
-          <div className="sentinel-text">
-            <span className="sentinel-label">AI Duplicate Sentinel</span>
-            <span className="sentinel-sub">Realtime Database Sync &bull; WAL Enabled</span>
-          </div>
-        </div>
       </header>
 
       {/* Metric KPI Summary Cards */}
