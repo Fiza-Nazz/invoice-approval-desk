@@ -48,7 +48,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="content-card glass-panel">
+      <div className="content-card">
         <div className="empty-state">
           <div className="spinner-glow" />
           <p className="loading-text">Loading invoices from database...</p>
@@ -63,12 +63,12 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
         <div className="search-box">
           <svg
             className="search-icon"
-            width="16"
-            height="16"
+            width="17"
+            height="17"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.5"
           >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -76,7 +76,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
           <input
             type="text"
             className="search-input"
-            placeholder="Search vendor, invoice #, or description..."
+            placeholder="Search by vendor, invoice number, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -92,12 +92,12 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
           )}
         </div>
         <div className="list-meta-count">
-          Showing <strong>{filteredInvoices.length}</strong> of <strong>{invoices.length}</strong> invoices
+          Showing <strong>{filteredInvoices.length}</strong> of <strong>{invoices.length}</strong> records
         </div>
       </div>
 
       {filteredInvoices.length === 0 ? (
-        <div className="content-card glass-panel">
+        <div className="content-card">
           <div className="empty-state">
             <svg
               className="empty-icon"
@@ -118,13 +118,13 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
             </p>
             <p className="empty-subtitle">
               {searchQuery
-                ? 'Try adjusting your search criteria or clear the filter.'
+                ? 'Try adjusting your search criteria or clear the search field.'
                 : 'All invoices in this queue have been processed.'}
             </p>
           </div>
         </div>
       ) : (
-        <div className="content-card glass-panel">
+        <div className="content-card">
           <div className="table-responsive">
             <table className="invoice-table" aria-label="Invoices list">
               <thead>
@@ -181,18 +181,32 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                       </span>
                     </td>
                     <td>
-                      <span className="date-cell">{formatDate(inv.invoice_date)}</span>
+                      <div className="date-cell">
+                        <svg className="date-icon-calendar" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                          <line x1="16" y1="2" x2="16" y2="6" />
+                          <line x1="8" y1="2" x2="8" y2="6" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        <span>{formatDate(inv.invoice_date)}</span>
+                      </div>
                     </td>
                     <td>
-                      <span className="date-cell">{formatDate(inv.due_date)}</span>
+                      <div className="date-cell">
+                        <svg className="date-icon-clock" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        <span>{formatDate(inv.due_date)}</span>
+                      </div>
                     </td>
                     <td>
                       <StatusBadge status={inv.status} />
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <span className="row-action-btn">
-                        <span>Inspect</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <span>Review</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </span>
