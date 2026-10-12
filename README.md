@@ -1,46 +1,104 @@
-# 🏢 Invoice Approval Desk
-
 <div align="center">
 
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
-![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite_3-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
-![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
+# 🏢 Invoice Approval Desk
 
-**A high-precision, full-stack Accounts Payable review desk with automated duplicate detection, strict status lifecycle state machines, and SQLite persistence.**
+### *Enterprise Accounts Payable Review Desk & Automated Duplicate Sentinel*
 
-[Quick Start](#-quick-start) &bull;
-[Architecture](#-architecture--monorepo-layout) &bull;
-[REST API](#-rest-api-reference) &bull;
-[Schema & Workflow](docs/SCHEMA.md) &bull;
-[Testing](#-automated-testing)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7_Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-v20%2B_%7C_v24-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.21-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6.1-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![SQLite](https://img.shields.io/badge/SQLite-WAL_Mode-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Vitest](https://img.shields.io/badge/Tests-13%2F13_Passing-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+
+<br/>
+
+<p align="center">
+  <a href="#-key-features">Features</a> &bull;
+  <a href="#-system-architecture">Architecture</a> &bull;
+  <a href="#-quick-start">Quick Start</a> &bull;
+  <a href="#-state-machine--business-rules">State Machine</a> &bull;
+  <a href="#-api-documentation">API Reference</a> &bull;
+  <a href="#-test-suite">Testing</a> &bull;
+  <a href="docs/SCHEMA.md">Schema Docs</a>
+</p>
 
 </div>
 
 ---
 
-## 📌 Project Overview
+## 📖 Executive Summary
 
-**Invoice Approval Desk** is an accounts payable review workspace designed to eliminate billing errors, catch duplicate supplier submissions, and commit irrevocable human decisions to an auditable database. 
+**Invoice Approval Desk** is an audit-grade accounts payable workflow platform designed to streamline vendor billing verification, detect duplicate invoice submissions, and record permanent approval/rejection decisions to an ACID-compliant database.
 
-Built with **TypeScript in strict mode** across both the backend and frontend, it features:
-- **Zero-Setup Database:** SQLite single-file storage (`data/invoices.db`) using an adaptive driver that runs seamlessly on Node.js 22+ native `node:sqlite` or `better-sqlite3` without native build tool hurdles.
-- **Enforced State Machine:** Invoices transition strictly through `processing` &rarr; `needs_review` &rarr; terminal `approved`/`rejected`. Modifying decided invoices returns HTTP `409 Conflict`.
-- **Duplicate Sentinel:** Automatically links suspected duplicates (`duplicate_of_id`) when matching vendor/invoice number or amount/date combinations occur.
-- **Navy Blue Executive UI:** Responsive React 18 SPA with real-time client search, tab metric counts, duplicate comparison panels, and accessible action buttons.
+Built from the ground up in **TypeScript strict mode**, the application features:
+- **Zero-Setup Database Engine:** Single-file SQLite storage (`data/invoices.db`) powered by an adaptive abstraction layer supporting Node 22+ built-in `node:sqlite` and `better-sqlite3` with zero native C++ compiler requirements.
+- **Tamper-Resistant State Machine:** Enforces strict transition legality (`processing` &rarr; `needs_review` &rarr; `approved`/`rejected`). Final decisions are strictly immutable, returning HTTP `409 Conflict` on re-decision attempts.
+- **Automated Duplicate Detection:** Flags matching vendor submissions, links candidates via foreign keys (`duplicate_of_id`), and provides a side-by-side reconciliation interface.
+- **Executive Navy Blue & White UI:** Clean, responsive React 18 interface with real-time client search, live tab counters, multi-color functional action triggers, and reviewer audit trails.
+
+---
+
+## ✨ Key Features
+
+| Feature | Description |
+|---|---|
+| 🛡️ **Duplicate Sentinel** | Automated matching engine flags duplicate candidate submissions based on `(vendor, invoice_number)` and `(vendor, amount, date)`. |
+| 🔒 **Immutable Terminal States** | Finalized statuses (`approved`, `rejected`) cannot be reverted or overwritten, preserving audit integrity with explicit `409 Conflict` responses. |
+| 💰 **Cents-Exact Accounting** | All monetary amounts are stored strictly as integer cents (`amount_cents`), eliminating floating-point rounding inaccuracies. |
+| ⚡ **Universal SQLite Adapter** | Dual-driver engine automatically utilizes Node 22/24 native `node:sqlite` or `better-sqlite3`, eliminating compilation errors on fresh machines. |
+| 🗂️ **Shared Domain Contracts** | Types, DTOs, and transition validation rules live in a shared workspace package (`@invoice-desk/shared`) guaranteeing compile-time type alignment. |
+| 🔍 **Live Search & Filter** | Instant client-side search across vendor names, invoice numbers, and line-item descriptions without breaking active tab filters. |
+| 📝 **Reviewer Audit Trails** | Captures optional reviewer decision notes and timestamps (`decided_at`, `updated_at`) directly into SQLite. |
+
+---
+
+## 🏛 System Architecture
+
+The project is structured as a clean **npm workspace monorepo**:
+
+```
+invoice-approval-desk/
+├── 📁 shared/                  # Domain contracts & transition state engine
+│   ├── src/index.ts            # Invoice models, DTOs, transition validator
+│   └── package.json
+├── 📁 server/                  # Backend Express REST API
+│   ├── src/
+│   │   ├── db/                 # Database layer & migrations
+│   │   │   ├── connection.ts   # SQLite connection manager & schema DDL
+│   │   │   ├── sqliteAdapter.ts# Universal driver adapter (node:sqlite / better-sqlite3)
+│   │   │   ├── invoicesRepository.ts # Data Access Layer (DAL)
+│   │   │   └── seed.ts         # Idempotent database seeder (6 sample records)
+│   │   ├── routes/             # Express API endpoints (/api/health, /api/invoices)
+│   │   ├── services/           # InvoicesService (business rules & state machine)
+│   │   ├── validators/         # Zod schemas for query, params, and body payloads
+│   │   ├── middleware/         # Uniform JSON error handler { error: { code, message } }
+│   │   ├── app.ts              # Express application factory & middleware setup
+│   │   └── index.ts            # Entrypoint listening on port 4000
+│   └── tests/                  # Integration test suite (Vitest + Supertest)
+├── 📁 web/                     # React 18 + Vite frontend SPA
+│   ├── src/
+│   │   ├── api/client.ts       # Typed API client with response/error normalization
+│   │   ├── components/         # Tabs, InvoiceList, InvoiceDetail, StatusBadge
+│   │   ├── App.tsx             # State coordinator for tabs and views
+│   │   └── index.css           # Clean Navy Blue + White responsive styling
+│   └── vite.config.ts          # Dev server with /api proxy to port 4000
+├── 📁 docs/
+│   └── SCHEMA.md               # Data model writeup, columns, and design decisions
+├── 📁 data/
+│   └── invoices.db             # Persisted SQLite database file (WAL mode)
+└── package.json                # Root package with monorepo scripts
+```
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- **Node.js (v20+ or v22+)**
-- **npm (v9+)**
+The repository is built to run out-of-the-box on a fresh machine with only **Node.js (v20+)** installed.
 
-### 1. Clone & Install
+### 1. Installation
 ```bash
 git clone https://github.com/Fiza-Nazz/invoice-approval-desk.git
 cd invoice-approval-desk
@@ -48,134 +106,87 @@ npm install
 ```
 
 ### 2. Seed Database
-Initializes the SQLite schema and populates **6 realistic invoices** (including exactly 1 duplicate candidate):
+Resets and seeds the SQLite database with **6 realistic invoices** (3 processing, 1 duplicate needs_review, 1 approved, 1 rejected):
 ```bash
 npm run seed
 ```
 
-### 3. Run Development Servers
-Starts both the Express REST API (`:4000`) and the Vite React frontend (`:5173`) concurrently:
+### 3. Start Development Servers
+Runs both the Express API and Vite Web UI concurrently:
 ```bash
 npm run dev
 ```
 
-| Service | URL | Notes |
-|---|---|---|
-| **Web UI** | [http://localhost:5173](http://localhost:5173) | Single-page review interface |
-| **REST API** | [http://localhost:4000/api](http://localhost:4000/api) | Express JSON endpoints |
-| **Health Check** | [http://localhost:4000/api/health](http://localhost:4000/api/health) | Uptime status verification |
-
-*(Note: Vite automatically proxies `/api` requests to `http://localhost:4000` during local development).*
+| Service | Port | Endpoint |
+|---|:---:|---|
+| **Web UI** | `5173` | [http://localhost:5173](http://localhost:5173) |
+| **REST API** | `4000` | [http://localhost:4000/api](http://localhost:4000/api) |
+| **Health Check** | `4000` | [http://localhost:4000/api/health](http://localhost:4000/api/health) |
 
 ### 4. Run Automated Tests
 ```bash
 npm test
 ```
 
-### 5. Run Typecheck Across All Workspaces
+### 5. Run Strict Typechecking
 ```bash
 npm run typecheck
 ```
 
 ---
 
-## 🏗 Architecture & Monorepo Layout
+## 🔄 Status Lifecycle & Business Rules
 
-The application utilizes native **npm workspaces** to cleanly separate shared domain contracts, server API logic, and UI client code:
-
-```
-invoice-approval-desk/
-├── docs/
-│   └── SCHEMA.md               # Data model, status lifecycles, and design writeup
-├── data/
-│   └── invoices.db             # Persisted SQLite database file (created on seed)
-├── shared/                     # Shared TypeScript domain contracts
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── src/
-│       └── index.ts            # DTOs, InvoiceStatus enums, transition validation
-├── server/                     # Backend Express REST API
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── src/
-│   │   ├── app.ts              # Express factory with CORS & error middleware
-│   │   ├── index.ts            # Server port binding (default 4000)
-│   │   ├── db/
-│   │   │   ├── connection.ts   # SQLite connection manager & schema DDL
-│   │   │   ├── sqliteAdapter.ts# Universal driver (node:sqlite / better-sqlite3)
-│   │   │   ├── invoicesRepository.ts # Data access layer (DAL)
-│   │   │   └── seed.ts         # Idempotent database seeder (6 sample records)
-│   │   ├── middleware/
-│   │   │   └── errorHandler.ts # Uniform { error: { code, message } } formatter
-│   │   ├── routes/
-│   │   │   ├── health.ts       # GET /api/health
-│   │   │   └── invoices.ts     # Invoices REST endpoints
-│   │   ├── services/
-│   │   │   └── invoicesService.ts # Business rules & state transition validation
-│   │   └── validators/
-│   │       └── invoiceValidators.ts # Zod request schemas
-│   └── tests/
-│       └── invoices.test.ts    # Vitest automated test suite (13 integration tests)
-├── web/                        # React 18 + Vite Frontend SPA
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── vite.config.ts          # Dev server and /api proxy configuration
-│   ├── index.html              # HTML shell
-│   └── src/
-│       ├── main.tsx            # React root mount
-│       ├── App.tsx             # State coordinator for tabs and views
-│       ├── index.css           # Clean white & Navy Blue styling
-│       ├── api/
-│       │   └── client.ts       # Typed fetch client with error normalization
-│       └── components/
-│           ├── Tabs.tsx        # Processing, Needs review, Decided tabs with counts
-│           ├── InvoiceList.tsx # Table display with formatted currency and badges
-│           ├── InvoiceDetail.tsx # Detailed view, duplicate warning, Approve/Reject
-│           └── StatusBadge.tsx # Accessible color-coded badge tags
-├── package.json                # Root package with monorepo scripts
-└── README.md
-```
-
----
-
-## 🔄 Status Workflow & Business Rules
-
-Invoices progress through a strict, tamper-resistant lifecycle:
+Invoices follow a unidirectional state machine to prevent unauthorized transition overrides:
 
 ```
-                 +-----------------------+
-                 |      processing       |
-                 +-----------+-----------+
-                             |
-             +---------------+---------------+
-             |                               |
-             v                               v
-    +-----------------+             +-----------------+
-    |  needs_review   |             |   Terminal:     |
-    +--------+--------+             |  approved /     |
-             |                      |   rejected      |
-             +--------------------->| (Immutable 409) |
-                                    +-----------------+
+                    +-----------------------+
+                    |      processing       |
+                    +-----------+-----------+
+                                |
+                +---------------+---------------+
+                |                               |
+                v                               v
+       +-----------------+             +-----------------+
+       |  needs_review   |             |   Terminal:     |
+       +--------+--------+             |  approved /     |
+                |                      |   rejected      |
+                +--------------------->| (Immutable 409) |
+                                       +-----------------+
 ```
 
-### Transition Enforcement
+### Transition Matrix
 
-| Current Status | `processing` | `needs_review` | `approved` | `rejected` |
+| Current State | Target: `processing` | Target: `needs_review` | Target: `approved` | Target: `rejected` |
 |---|:---:|:---:|:---:|:---:|
 | **`processing`** | ❌ 409 Conflict | ✅ Allowed | ✅ Sets `decided_at` | ✅ Sets `decided_at` |
 | **`needs_review`** | ❌ 409 Conflict | ❌ 409 Conflict | ✅ Sets `decided_at` | ✅ Sets `decided_at` |
 | **`approved`** | ❌ 409 (Final) | ❌ 409 (Final) | ❌ 409 (Final) | ❌ 409 (Final) |
 | **`rejected`** | ❌ 409 (Final) | ❌ 409 (Final) | ❌ 409 (Final) | ❌ 409 (Final) |
 
-- **Terminal States Are Immutable:** Once an invoice is marked `approved` or `rejected`, any subsequent change attempts return `409 Conflict`.
-- **Duplicate Linking:** Duplicates feature `duplicate_of_id` referencing the original invoice, rendering a side-by-side comparison box with a direct inspection link.
+> [!NOTE]
+> Setting the identical status again, or attempting any invalid transition, returns **HTTP 409 Conflict** with a descriptive JSON error payload.
 
 ---
 
-## 📡 REST API Reference
+## 📊 Seed Data Distribution
 
-Base URL: `/api`  
-All responses use standard HTTP status codes and JSON payloads. Errors follow the format:
+The seed script (`npm run seed`) guarantees a clean, reproducible database state:
+
+| ID | Invoice # | Vendor Name | Amount | Status | Details |
+|:---:|:---:|---|:---:|:---:|---|
+| **1** | `INV-2026-101` | Apex Concrete & Aggregates | $14,250.00 | `processing` | Ready-mix batch delivery (Original) |
+| **2** | `INV-2026-102` | Titan Steel Fabricators | $8,900.00 | `processing` | Structural I-beams and rebar |
+| **3** | `INV-2026-103` | BuildRight Timber Supply | $3,450.00 | `processing` | Pressure-treated lumber & plywood |
+| **4** | `INV-2026-101` | Apex Concrete & Aggregates | $14,250.00 | `needs_review` | **Duplicate of #1** (`duplicate_of_id = 1`) |
+| **5** | `INV-2026-095` | Metro Electrical Wholesale | $5,120.00 | `approved` | Commercial 3-phase switchboard |
+| **6** | `INV-2026-098` | Vanguard Heavy Equipment | $7,800.00 | `rejected` | Disputed rate above master contract |
+
+---
+
+## 📡 REST API Documentation
+
+All endpoints are hosted under `/api`. Responses are standard JSON with uniform error envelopes:
 ```json
 {
   "error": {
@@ -186,7 +197,8 @@ All responses use standard HTTP status codes and JSON payloads. Errors follow th
 ```
 
 ### 1. Health Check
-`GET /api/health`
+- **Endpoint:** `GET /api/health`
+- **Purpose:** Verifies server uptime and availability.
 
 ```bash
 curl -X GET http://localhost:4000/api/health
@@ -201,10 +213,9 @@ curl -X GET http://localhost:4000/api/health
 ---
 
 ### 2. List Invoices
-`GET /api/invoices`
-
-**Query Parameters:**
-- `status` *(optional)*: Single status or comma-separated list (e.g. `processing`, `needs_review`, `approved,rejected`).
+- **Endpoint:** `GET /api/invoices`
+- **Query Parameters:**
+  - `status` *(optional)*: Comma-separated status filters (e.g. `processing`, `needs_review`, `approved,rejected`).
 
 ```bash
 curl -X GET "http://localhost:4000/api/invoices?status=processing"
@@ -242,10 +253,9 @@ curl -X GET "http://localhost:4000/api/invoices?status=processing"
 
 ---
 
-### 3. Get Single Invoice
-`GET /api/invoices/:id`
-
-If the invoice has `duplicate_of_id`, an `original_invoice` summary is embedded:
+### 3. Get Invoice by ID
+- **Endpoint:** `GET /api/invoices/:id`
+- **Purpose:** Returns complete invoice detail. If the record is flagged as a duplicate, an `original_invoice` summary object is embedded.
 
 ```bash
 curl -X GET http://localhost:4000/api/invoices/4
@@ -283,20 +293,19 @@ curl -X GET http://localhost:4000/api/invoices/4
 ---
 
 ### 4. Update Invoice Status
-`PATCH /api/invoices/:id/status`
-
-**Request Body:**
-```json
-{
-  "status": "approved",
-  "note": "PO matched with signed delivery receipt"
-}
-```
+- **Endpoint:** `PATCH /api/invoices/:id/status`
+- **Request Body:**
+  ```json
+  {
+    "status": "approved", // "approved" | "rejected" | "needs_review"
+    "note": "PO matched with warehouse delivery receipt" // optional
+  }
+  ```
 
 ```bash
 curl -X PATCH http://localhost:4000/api/invoices/1/status \
   -H "Content-Type: application/json" \
-  -d '{"status": "approved", "note": "Approved by AP Reviewer"}'
+  -d '{"status": "approved", "note": "Verified by AP Supervisor"}'
 ```
 
 ```json
@@ -308,57 +317,74 @@ curl -X PATCH http://localhost:4000/api/invoices/1/status \
     "amount_cents": 1425000,
     "currency": "USD",
     "status": "approved",
+    "review_reason": "Verified by AP Supervisor",
     "decided_at": "2026-10-12T15:25:28.641Z",
-    "updated_at": "2026-10-12T15:25:28.641Z"
+    "created_at": "2026-10-01T08:30:00.000Z",
+    "updated_at": "2026-10-12T15:25:28.641Z",
+    "original_invoice": null
   }
 }
 ```
 
-*(Attempting to transition an already approved invoice returns HTTP `409 Conflict`).*
+#### Error Handling Responses:
+- **HTTP 409 Conflict:** When transitioning an already finalized invoice or submitting an identical status.
+- **HTTP 400 Bad Request:** When body fails Zod schema validation.
+- **HTTP 404 Not Found:** When target invoice ID does not exist.
 
 ---
 
-## 🧪 Automated Testing
+## 🧪 Test Suite
 
-The API includes 13 integration tests executed against an in-memory SQLite database instance:
+The automated test suite runs via **Vitest** and **Supertest** against an isolated in-memory SQLite database:
 
 ```bash
 npm test
 ```
 
 ```
- ✓ tests/invoices.test.ts (13 tests)
-   ✓ Invoices API Tests > GET /api/health should return ok: true
-   ✓ Invoices API Tests > GET /api/invoices should list all invoices with counts
-   ✓ Invoices API Tests > GET /api/invoices?status=processing should filter by status
-   ✓ Invoices API Tests > GET /api/invoices?status=approved,rejected should support comma-separated filters
-   ✓ Invoices API Tests > GET /api/invoices/:id returns single invoice with all fields
-   ✓ Invoices API Tests > GET /api/invoices/:id includes original invoice summary when duplicate_of_id is present
-   ✓ Invoices API Tests > GET /api/invoices/:id returns 404 for missing invoice
-   ✓ Invoices API Tests > PATCH /api/invoices/:id/status allows valid status change (processing -> approved)
-   ✓ Invoices API Tests > PATCH /api/invoices/:id/status allows valid status change (needs_review -> rejected)
-   ✓ Invoices API Tests > PATCH /api/invoices/:id/status returns 409 Conflict for invalid transition on finalized invoice
-   ✓ Invoices API Tests > PATCH /api/invoices/:id/status returns 409 Conflict when setting identical status
-   ✓ Invoices API Tests > PATCH /api/invoices/:id/status returns 404 for missing invoice
-   ✓ Invoices API Tests > PATCH /api/invoices/:id/status returns 400 for invalid body
+ ✓ tests/invoices.test.ts (13 tests) 466ms
+   ✓ GET /api/health should return ok: true
+   ✓ GET /api/invoices should list all invoices with counts
+   ✓ GET /api/invoices?status=processing should filter by status
+   ✓ GET /api/invoices?status=approved,rejected should support comma-separated filters
+   ✓ GET /api/invoices/:id returns single invoice with all fields
+   ✓ GET /api/invoices/:id includes original invoice summary when duplicate_of_id is present
+   ✓ GET /api/invoices/:id returns 404 for missing invoice
+   ✓ PATCH /api/invoices/:id/status allows valid status change (processing -> approved)
+   ✓ PATCH /api/invoices/:id/status allows valid status change (needs_review -> rejected)
+   ✓ PATCH /api/invoices/:id/status returns 409 Conflict for invalid transition on finalized invoice
+   ✓ PATCH /api/invoices/:id/status returns 409 Conflict when setting identical status
+   ✓ PATCH /api/invoices/:id/status returns 404 for missing invoice
+   ✓ PATCH /api/invoices/:id/status returns 400 for invalid body
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
 ```
 
 ---
 
-## 📑 Detailed Documentation
+## 📑 Schema & Architectural Reference
 
-Comprehensive database schema documentation, column specifications, duplicate detection rules, and design rationale can be found in [`docs/SCHEMA.md`](docs/SCHEMA.md).
-
----
-
-## ⚖️ Design Decisions & Trade-offs
-
-1. **Monetary Values in Integer Cents (`amount_cents`):** Completely eliminates floating-point rounding errors common in financial calculations.
-2. **Universal SQLite Adapter:** Dynamically bridges Node.js 22+ native `node:sqlite` and `better-sqlite3`, guaranteeing reliable zero-dependency execution across Windows, Linux, and macOS without requiring Visual Studio or C++ compilers.
-3. **Database-Driven Aggregations:** Status tab counters are queried directly from SQLite `COUNT(*) GROUP BY status`, guaranteeing that refreshing the page always reflects the persistent database state.
+Detailed architectural specifications, DDL statements, duplicate rule execution points, and rationale are documented in:
+👉 **[`docs/SCHEMA.md`](docs/SCHEMA.md)**
 
 ---
 
-## 📄 License
+## ⚖️ Trade-offs & Production Roadmap
 
-MIT &bull; Created for Accounts Payable Engineering Desk.
+### Trade-offs & Assumptions
+1. **Single-File SQLite:** Chosen for zero-setup execution. The custom `sqliteAdapter` bridges Node.js 22+ native `node:sqlite` and `better-sqlite3`, ensuring compatibility across operating systems without C++ compilation hurdles.
+2. **Deterministic Duplicate Rule:** Matches on `(vendor_name, invoice_number)` and identical `(vendor_name, amount_cents, invoice_date)`. In enterprise production, OCR noise often requires fuzzy Levenshtein distance heuristics.
+3. **Tab Preserved Navigation:** Navigating from the list to detail view and clicking *"Back to Invoices Queue"* preserves the active tab and client filter state.
+
+### Future Roadmap
+- [ ] **Pagination & Sorting:** Cursor-based pagination for high-volume queues (>100k invoices).
+- [ ] **Audit Trail Log Table:** Dedicated `invoice_audit_logs` table tracking IP, user ID, and diff history.
+- [ ] **PDF & OCR Preview:** Embedded PDF viewer with side-by-side line item highlighting.
+- [ ] **Dual Approval Thresholds:** Multi-tier authorization rules for invoices exceeding $10,000.
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License** &bull; Created for Accounts Payable Engineering Desk.
