@@ -1,0 +1,23 @@
+{
+  "name": "invoice-approval-desk",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "seed": "npm run seed --workspace=@invoice-desk/server",
+    "dev": "concurrently -k -n \"api,web\" -c \"blue,green\" \"npm run dev --workspace=@invoice-desk/server\" \"npm run dev --workspace=@invoice-desk/web\"",
+    "dev:server": "npm run dev --workspace=@invoice-desk/server",
+    "dev:web": "npm run dev --workspace=@invoice-desk/web",
+    "test": "npm run test --workspace=@invoice-desk/server",
+    "typecheck": "npm run typecheck --workspace=@invoice-desk/shared && npm run typecheck --workspace=@invoice-desk/server && npm run typecheck --workspace=@invoice-desk/web",
+    "build": "npm run build --workspace=@invoice-desk/web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
